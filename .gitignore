@@ -136,3 +136,7 @@ dmypy.json
 ## vim
 *.sw?
 big-lama/models/best.ckpt
+.pt
+.png
+.mp4
+TrackedFrames/
