@@ -1,24 +1,21 @@
-indir: no  # to be overriden in CLI
-outdir: no  # to be overriden in CLI
-
-model:
-  path: no  # to be overriden in CLI
-  checkpoint: best.ckpt
-
 dataset:
-  kind: default
   img_suffix: .png
+  kind: default
   pad_out_to_modulo: 8
-
 device: cuda
+fps: 25
+indir: /media/mlpc2/workspace/sagor/TestingModels/lama/testImages
+model:
+  checkpoint: best.ckpt
+  path: /media/mlpc2/workspace/sagor/TestingModels/lama/big-lama
 out_key: inpainted
-
-refine: False # refiner will only run if this is True
+outdir: /media/mlpc2/workspace/sagor/TestingModels/lama/output
+refine: true
 refiner:
-  gpu_ids: 0,1 # the GPU ids of the machine to use. If only single GPU, use: "0,"
+  gpu_ids: 0,
+  lr: 0.002
+  max_scales: 3
+  min_side: 512
   modulo: ${dataset.pad_out_to_modulo}
-  n_iters: 15 # number of iterations of refinement for each scale
-  lr: 0.002 # learning rate
-  min_side: 512 # all sides of image on all scales should be >= min_side / sqrt(2)
-  max_scales: 3 # max number of downscaling scales for the image-mask pyramid
-  px_budget: 1800000 # pixels budget. Any image will be resized to satisfy height*width <= px_budget
+  n_iters: 15
+  px_budget: 900000
