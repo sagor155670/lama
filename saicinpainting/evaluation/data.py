@@ -59,7 +59,7 @@ class InpaintingDataset(Dataset):
     def __init__(self, datadir, img_suffix='.jpg', pad_out_to_modulo=None, scale_factor=None):
         self.datadir = datadir
         # self.mask_filenames = sorted(list(glob.glob(os.path.join(self.datadir, '**', '*mask*.png'), recursive=True)))
-        self.mask_filenames = sorted(glob.glob(os.path.join(self.datadir, '**', '*mask*.png'), recursive=True),key=self.extract_number)
+        self.mask_filenames = sorted(glob.glob(os.path.join(self.datadir, '**', '*mask*.jpg'), recursive=True),key=self.extract_number)
 
         
         # print(self.mask_filenames)
@@ -72,7 +72,7 @@ class InpaintingDataset(Dataset):
 
     def extract_number(self,path):
         # Extract number from the filename using regex
-        match = re.search(r'(\d+)_mask\.png$', os.path.basename(path))
+        match = re.search(r'(\d+)_mask\.jpg$', os.path.basename(path))
         if match:
             return int(match.group(1))
         return 0  # Default to 0 if no number is found

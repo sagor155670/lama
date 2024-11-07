@@ -23,7 +23,11 @@ from omegaconf import OmegaConf
 from bin.testWithRefiner import main
 LOGGER = logging.getLogger(__name__)
 
-
+root = '/media/mlpc2/workspace/sagor/TestingModels/lama/'
+testImageDir = os.path.join(root,'testImages')
+outputDir = os.path.join(root,'output')
+trackedFrameDir = os.path.join(root,'TrackedFrames')
+defaultConfigPath = os.path.join(root,'configs/prediction/default.yaml')
 
 def truncate_float(float_number, decimal_places):
     multiplier = 10 ** decimal_places
@@ -39,8 +43,8 @@ def get_object_id(seg_boxes,track_ids, event: gr.SelectData, video):
             return videoTracker(video,track_id)    
 
 def getFirstTrackedFrame(video):
-    # model = YOLO("yolov8x-seg.pt")  # segmentation model
-    model = SAM('sam2_b.pt')
+    model = YOLO("yolov8x-seg.pt")  # segmentation model
+    # model = SAM('sam2_b.pt')
     cap = cv2.VideoCapture(video)
     w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
     ret, firstFrame = cap.read()
@@ -58,18 +62,20 @@ def getFirstTrackedFrame(video):
                 expanded_mask  = maskPoly.buffer(10.0)
                 maskNumpy = np.array(expanded_mask.exterior.coords, dtype=np.int32)
                 annotator.seg_bbox(mask=maskNumpy, mask_color=color, label=str(track_id), txt_color=txt_color)
-    seg_frame = "seg_frame.png"
+    seg_frame = "seg_frame.jpg"
     cv2.imwrite(seg_frame, firstFrame)
     return gr.Image(value=seg_frame, visible = True), masks, track_ids
 
 def getAllTrackedFrames(video,track_id) :
-    delete_all_files('/media/mlpc2/workspace/sagor/TestingModels/lama/TrackedFrames')
+    
+    if os.path.exists(trackedFrameDir):
+        delete_all_files(trackedFrameDir)
     # track_history = defaultdict(lambda: [])
     frames = []
 
-    # model = YOLO("yolov8x-seg.pt")  # segmentation model
+    model = YOLO("yolov8x-seg.pt")  # segmentation model
     # lama_model = load_lama_model() #inpaint model
-    model = SAM('sam2_b.pt')
+    # model = SAM('sam2_b.pt')
     cap = cv2.VideoCapture(video)
     w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 
@@ -77,7 +83,7 @@ def getAllTrackedFrames(video,track_id) :
     t = t_unit
     # out = cv2.VideoWriter("output.webm", cv2.VideoWriter_fourcc(*"VP90"), fps, (w, h))
 
-    setFrameRate(fps if fps <= 25 else 25,"/media/mlpc2/workspace/sagor/TestingModels/lama/configs/prediction/default.yaml")
+    setFrameRate(fps if fps <= 25 else 25,defaultConfigPath)
 
     i = 0
     while True:
@@ -117,7 +123,7 @@ def getAllTrackedFrames(video,track_id) :
 
                     annotator.seg_bbox(mask=maskNumpy, mask_color=color, label=str(id), txt_color=txt_color)
                     # cv2.fillPoly(blackMask,[maskNumpy], 255)
-            cv2.imwrite(f'/media/mlpc2/workspace/sagor/TestingModels/lama/TrackedFrames/image{i}_mask.png', im0)
+            cv2.imwrite(f'{root}/TrackedFrames/image{i}_mask.jpg', im0)
             
         mask_img = blackMask 
         t = truncate_float(t + t_unit , 2)            
@@ -127,14 +133,17 @@ def onClear(input_video):
 
 
 def videoTracker(video,track_id) :
-    delete_all_files('/media/mlpc2/workspace/sagor/TestingModels/lama/testImages')
-    delete_all_files('/media/mlpc2/workspace/sagor/TestingModels/lama/output')
+
+    if os.path.exists(testImageDir):
+        delete_all_files(testImageDir)
+    if os.path.exists(outputDir):
+        delete_all_files(outputDir)
     # track_history = defaultdict(lambda: [])
     frames = []
 
-    # model = YOLO("yolov8x-seg.pt")  # segmentation model
+    model = YOLO("yolov8x-seg.pt")  # segmentation model
     # lama_model = load_lama_model() #inpaint model
-    model = SAM('sam2_b.pt')
+    # model = SAM('sam2_b.pt')
     cap = cv2.VideoCapture(video)
     w, h, fps = (int(cap.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
 
@@ -143,7 +152,7 @@ def videoTracker(video,track_id) :
         
     # out = cv2.VideoWriter("output.webm", cv2.VideoWriter_fourcc(*"VP90"), fps, (w, h))
 
-    setFrameRate(fps if fps <= 25 else 25 ,"/media/mlpc2/workspace/sagor/TestingModels/lama/configs/prediction/default.yaml")
+    setFrameRate(fps if fps <= 25 else 25 , defaultConfigPath)
 
     i = 0
     while True:
@@ -162,7 +171,7 @@ def videoTracker(video,track_id) :
             continue
 
 
-        cv2.imwrite(f"/media/mlpc2/workspace/sagor/TestingModels/lama/testImages/image{i}.png",im0)
+        cv2.imwrite(f"{root}/testImages/image{i}.jpg",im0)
         annotator = Annotator(im0, line_width=2)
 
         results = model.track(im0, persist=True)
@@ -185,7 +194,7 @@ def videoTracker(video,track_id) :
 
                     annotator.seg_bbox(mask=maskNumpy, mask_color=color, label=str(id), txt_color=txt_color)
                     cv2.fillPoly(blackMask,[maskNumpy], 255)
-            cv2.imwrite(f'/media/mlpc2/workspace/sagor/TestingModels/lama/testImages/image{i}_mask.png', blackMask)
+            cv2.imwrite(f'{root}/testImages/image{i}_mask.jpg', blackMask)
             
         mask_img = blackMask 
         t = truncate_float(t + t_unit , 2)    
@@ -199,22 +208,22 @@ def videoTracker(video,track_id) :
     cap.release()
     getAllTrackedFrames(video,track_id)
 
-    frames = getFrames(output_path='/media/mlpc2/workspace/sagor/TestingModels/lama/output')
-    masks = getFrames(output_path='/media/mlpc2/workspace/sagor/TestingModels/lama/TrackedFrames')
+    frames = getFrames(output_path=outputDir)
+    masks = getFrames(output_path= trackedFrameDir)
 
-    return gr.Video("/media/mlpc2/workspace/sagor/TestingModels/lama/output.webm"), gr.Gallery(frames),gr.Gallery(masks),
+    return gr.Video(f"{root}/output.webm"), gr.Gallery(frames),gr.Gallery(masks),
 # cv2.destroyAllWindows()
 
 
 
 
 def getFrames(output_path):
-    return sorted(glob.glob(os.path.join(output_path, '*mask*.png'), recursive=True),key= extract_number)
+    return sorted(glob.glob(os.path.join(output_path, '*mask*.jpg'), recursive=True),key= extract_number)
 
 
 def extract_number(path):
     # Extract number from the filename using regex
-    match = re.search(r'(\d+)_mask\.png$', os.path.basename(path))
+    match = re.search(r'(\d+)_mask\.jpg$', os.path.basename(path))
     if match:
         return int(match.group(1))
     return 0  # Default to 0 if no number is found

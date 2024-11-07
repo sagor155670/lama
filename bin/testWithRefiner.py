@@ -63,7 +63,7 @@ def main(predict_config: OmegaConf):
         train_config.training_model.predict_only = True
         train_config.visualizer.kind = 'noop'
 
-        out_ext = predict_config.get('out_ext', '.png')
+        out_ext = predict_config.get('out_ext', '.jpg')
 
         checkpoint_path = os.path.join(predict_config.model.path, 
                                        'models', 

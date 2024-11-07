@@ -1,5 +1,5 @@
 dataset:
-  img_suffix: .png
+  img_suffix: .jpg
   kind: default
   pad_out_to_modulo: 8
 device: cuda
@@ -8,6 +8,7 @@ indir: /media/mlpc2/workspace/sagor/TestingModels/lama/testImages
 model:
   checkpoint: best.ckpt
   path: /media/mlpc2/workspace/sagor/TestingModels/lama/big-lama
+out_ext: .jpg
 out_key: inpainted
 outdir: /media/mlpc2/workspace/sagor/TestingModels/lama/output
 refine: true

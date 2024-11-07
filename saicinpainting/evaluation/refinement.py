@@ -171,7 +171,7 @@ def _infer(
     # "pred" is the prediction after Plug-n-Play module
     inpainted = mask * pred + (1 - mask) * image
     inpainted = inpainted.detach().cpu()
-    print("iiinside refiner")
+    # print("iiinside refiner")
     return inpainted
 
 def _get_image_mask_pyramid(batch : dict, min_side : int, max_scales : int, px_budget : int):
